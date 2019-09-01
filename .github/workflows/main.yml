@@ -54,9 +54,10 @@ jobs:
     - name: Push image to AWS ECR
       run: |
         $(aws ecr get-login --no-include-email --region ap-southeast-1)
-        docker push ${GITHUB_REPOSITORY}:${GITHUB_SHA}
-        docker push ${GITHUB_REPOSITORY}:latest
+        docker push ${AWS_REPOSITORY}:${GITHUB_SHA}
+        docker push ${AWS_REPOSITORY}:latest
         docker logout
       env:
+        AWS_REPOSITORY: ${{ secrets.AWS_REPOSITORY }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
