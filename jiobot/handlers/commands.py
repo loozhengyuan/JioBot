@@ -1,7 +1,7 @@
 import textwrap
 import random
 
-from telegram import ParseMode, ChatAction
+from telegram import ParseMode
 from telegram.ext import run_async
 
 from jiobot.decorators import send_typing_action

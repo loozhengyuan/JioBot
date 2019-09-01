@@ -1,4 +1,3 @@
-import random
 import logging
 
 from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, ForceReply

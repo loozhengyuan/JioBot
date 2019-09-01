@@ -1,9 +1,9 @@
 import random
 
-from telegram import ChatAction
 from telegram.ext import run_async
 
 from jiobot.decorators import send_typing_action
+
 
 @run_async
 @send_typing_action
