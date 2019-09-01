@@ -171,11 +171,9 @@ def end_event(update, context):
     """Handles intent to stop accepting rsvp responses"""
 
     # Get message_id of event status
-    chat_type = update.effective_chat.type
-    if chat_type != Chat.PRIVATE:
-        message_id = update.message.reply_to_message.message_id
-    else:
-        message_id = context.chat_data['newevent']['message_id']
+    # NOTE: By deriving the message_id from current conversation,
+    # the current max concurrent events will be strictly 1
+    message_id = context.chat_data['newevent']['message_id']
 
     # Generate attendee lists
     attendees = []
