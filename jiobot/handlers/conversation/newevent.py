@@ -1,7 +1,6 @@
 import logging
 
 from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, ForceReply
-from telegram.chat import Chat
 from telegram.ext import ConversationHandler
 
 from jiobot.decorators import send_typing_action
