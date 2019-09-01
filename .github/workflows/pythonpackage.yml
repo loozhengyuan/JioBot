@@ -23,3 +23,12 @@ jobs:
     - name: Lint with flake8
       run: |
         make lint
+
+  build:
+ 
+    runs-on: ubuntu-latest
+ 
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag $(GITHUB_REPOSITORY):$(GITHUB_SHA)
