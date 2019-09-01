@@ -37,3 +37,11 @@ jobs:
     - name: Tag Docker image
       run: |
         docker tag ${GITHUB_REPOSITORY}:${GITHUB_SHA} ${GITHUB_REPOSITORY}:latest
+    - name: Push image to Docker Hub
+      run: |
+        echo "${docker_password}" | docker login --username "${docker_username}" --password-stdin
+        docker push ${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker push ${GITHUB_REPOSITORY}:latest
+      env:
+        docker_username: ${{ secrets.DOCKER_USERNAME }}
+        docker_password: ${{ secrets.DOCKER_PASSWORD }}
