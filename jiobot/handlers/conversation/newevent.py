@@ -201,6 +201,9 @@ def handle_rsvp(update, context):
 def end_event(update, context):
     """Handles intent to stop accepting rsvp responses"""
 
+    # Log deprecation warning
+    logging.warning("The /endevent command has been deprecated! Use the END button instead.")
+
     # Get message_id of event status
     # NOTE: By deriving the message_id from current conversation,
     # the current max concurrent events will be strictly 1
