@@ -7,7 +7,7 @@ from jiobot.decorators import send_typing_action
 
 EVENT_STATUS = "<b>{event_name}</b>\n{attendees}{nonattendees}"
 
-RSVP_OPEN = "\nYou may /endevent to stop RSVPs."
+NO_RESPONSES_YET = "\n<i>No Responses Yet</i>"
 
 
 class STATES:
@@ -18,6 +18,22 @@ class STATES:
 class RSVP:
     YES = "YES"
     NO = "NO"
+
+
+class EVENT:
+    START = "START"
+    END = "END"
+
+
+RSVP_BUTTONS = [
+    [
+        InlineKeyboardButton(RSVP.YES, callback_data=RSVP.YES),
+        InlineKeyboardButton(RSVP.NO, callback_data=RSVP.NO),
+    ],
+    [
+        InlineKeyboardButton(EVENT.END, callback_data=EVENT.END),
+    ],
+]
 
 
 @send_typing_action
@@ -58,13 +74,7 @@ def handle_event_name(update, context):
         return ConversationHandler.END
 
     # Create button keyboard
-    buttons = [
-        [
-            InlineKeyboardButton(RSVP.YES, callback_data=RSVP.YES),
-            InlineKeyboardButton(RSVP.NO, callback_data=RSVP.NO),
-        ],
-    ]
-    markup = InlineKeyboardMarkup(buttons)
+    markup = InlineKeyboardMarkup(RSVP_BUTTONS)
 
     # List of phrases/sentences with the same meaning
     message = context.bot.send_message(
@@ -73,7 +83,7 @@ def handle_event_name(update, context):
             event_name=event_name,
             attendees="",
             nonattendees="",
-        ) + RSVP_OPEN,
+        ) + NO_RESPONSES_YET,
         parse_mode=ParseMode.HTML,
         reply_markup=markup,
     )
@@ -89,8 +99,37 @@ def handle_rsvp(update, context):
     # TODO: Implement __contains__ and check validity
     choice = update.callback_query.data
     logging.info(f"User @{update.callback_query.from_user.username} selected {choice}")
-    if choice not in [RSVP.YES, RSVP.NO]:
+    if choice not in [RSVP.YES, RSVP.NO, EVENT.END]:
         logging.info(f"User @{update.callback_query.from_user.username} did not choose YES or NO, terminating conversation.")
+        return ConversationHandler.END
+
+    # Handle stop event
+    if choice == EVENT.END:
+
+        # TODO: Check if user is admin
+
+        # Remove keyboard markup
+        context.bot.edit_message_text(
+            chat_id=update.callback_query.message.chat_id,
+            message_id=update.callback_query.message.message_id,
+            text=update.callback_query.message.text_html,
+            parse_mode=ParseMode.HTML,
+        )
+
+        # Sends a text reply
+        message = "RSVP has closed!"
+        context.bot.send_message(
+            chat_id=update.callback_query.message.chat_id,
+            reply_to_message_id=update.callback_query.message.message_id,
+            text=message,
+        )
+
+        # Deletes chat_data if it currently exists
+        if context.chat_data.get("newevent"):
+            del context.chat_data['newevent']
+
+        # Answer callback
+        context.bot.answer_callback_query(update.callback_query.id)
         return ConversationHandler.END
 
     # Retrieves user information
@@ -130,13 +169,7 @@ def handle_rsvp(update, context):
             nonattendees.append(f"@{user}")
 
     # Create button keyboard
-    buttons = [
-        [
-            InlineKeyboardButton(RSVP.YES, callback_data=RSVP.YES),
-            InlineKeyboardButton(RSVP.NO, callback_data=RSVP.NO),
-        ],
-    ]
-    markup = InlineKeyboardMarkup(buttons)
+    markup = InlineKeyboardMarkup(RSVP_BUTTONS)
 
     # List of phrases/sentences with the same meaning
     event_name = context.chat_data['newevent']['event_name']
@@ -155,7 +188,7 @@ def handle_rsvp(update, context):
             event_name=event_name,
             attendees=attendees,
             nonattendees=nonattendees,
-        ) + RSVP_OPEN,
+        ),
         parse_mode=ParseMode.HTML,
         reply_markup=markup,
     )
@@ -168,6 +201,9 @@ def handle_rsvp(update, context):
 @send_typing_action
 def end_event(update, context):
     """Handles intent to stop accepting rsvp responses"""
+
+    # Log deprecation warning
+    logging.warning("The /endevent command has been deprecated! Use the END button instead.")
 
     # Get message_id of event status
     # NOTE: By deriving the message_id from current conversation,
