@@ -7,7 +7,7 @@ from jiobot.decorators import send_typing_action
 
 EVENT_STATUS = "<b>{event_name}</b>\n{attendees}{nonattendees}"
 
-RSVP_OPEN = "\nYou may /endevent to stop RSVPs."
+NO_RESPONSES_YET = "\n<i>No Responses Yet</i>"
 
 
 class STATES:
@@ -82,7 +82,7 @@ def handle_event_name(update, context):
             event_name=event_name,
             attendees="",
             nonattendees="",
-        ) + RSVP_OPEN,
+        ) + NO_RESPONSES_YET,
         parse_mode=ParseMode.HTML,
         reply_markup=markup,
     )
@@ -187,7 +187,7 @@ def handle_rsvp(update, context):
             event_name=event_name,
             attendees=attendees,
             nonattendees=nonattendees,
-        ) + RSVP_OPEN,
+        ),
         parse_mode=ParseMode.HTML,
         reply_markup=markup,
     )
