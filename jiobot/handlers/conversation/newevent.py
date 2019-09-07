@@ -108,6 +108,35 @@ def handle_rsvp(update, context):
         logging.info(f"User @{update.callback_query.from_user.username} did not choose YES or NO, terminating conversation.")
         return ConversationHandler.END
 
+    # Handle stop event
+    if choice == EVENT.END:
+
+        # TODO: Check if user is admin
+
+        # Remove keyboard markup
+        context.bot.edit_message_text(
+            chat_id=update.callback_query.message.chat_id,
+            message_id=update.callback_query.message.message_id,
+            text=update.callback_query.message.text_html,
+            parse_mode=ParseMode.HTML,
+        )
+
+        # Sends a text reply
+        message = "RSVP has closed!"
+        context.bot.send_message(
+            chat_id=update.callback_query.message.chat_id,
+            reply_to_message_id=update.callback_query.message.message_id,
+            text=message,
+        )
+
+        # Deletes chat_data if it currently exists
+        if context.chat_data.get("newevent"):
+            del context.chat_data['newevent']
+        
+        # Answer callback
+        context.bot.answer_callback_query(update.callback_query.id)
+        return ConversationHandler.END
+
     # Retrieves user information
     user_handle = update.callback_query.from_user.username
     if not user_handle:
