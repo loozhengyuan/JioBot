@@ -104,7 +104,7 @@ def handle_rsvp(update, context):
     # TODO: Implement __contains__ and check validity
     choice = update.callback_query.data
     logging.info(f"User @{update.callback_query.from_user.username} selected {choice}")
-    if choice not in [RSVP.YES, RSVP.NO]:
+    if choice not in [RSVP.YES, RSVP.NO, EVENT.END]:
         logging.info(f"User @{update.callback_query.from_user.username} did not choose YES or NO, terminating conversation.")
         return ConversationHandler.END
 
