@@ -73,13 +73,7 @@ def handle_event_name(update, context):
         return ConversationHandler.END
 
     # Create button keyboard
-    buttons = [
-        [
-            InlineKeyboardButton(RSVP.YES, callback_data=RSVP.YES),
-            InlineKeyboardButton(RSVP.NO, callback_data=RSVP.NO),
-        ],
-    ]
-    markup = InlineKeyboardMarkup(buttons)
+    markup = InlineKeyboardMarkup(RSVP_BUTTONS)
 
     # List of phrases/sentences with the same meaning
     message = context.bot.send_message(
@@ -174,13 +168,7 @@ def handle_rsvp(update, context):
             nonattendees.append(f"@{user}")
 
     # Create button keyboard
-    buttons = [
-        [
-            InlineKeyboardButton(RSVP.YES, callback_data=RSVP.YES),
-            InlineKeyboardButton(RSVP.NO, callback_data=RSVP.NO),
-        ],
-    ]
-    markup = InlineKeyboardMarkup(buttons)
+    markup = InlineKeyboardMarkup(RSVP_BUTTONS)
 
     # List of phrases/sentences with the same meaning
     event_name = context.chat_data['newevent']['event_name']
