@@ -25,6 +25,16 @@ class EVENT:
     END = "END"
 
 
+RSVP_BUTTONS = [
+        [
+            InlineKeyboardButton(RSVP.YES, callback_data=RSVP.YES),
+            InlineKeyboardButton(RSVP.NO, callback_data=RSVP.NO),
+        ],
+        [
+            InlineKeyboardButton(EVENT.END, callback_data=EVENT.END),
+        ],
+    ]
+
 @send_typing_action
 def entry(update, context):
     """Handles the entry point for the chatbot"""
