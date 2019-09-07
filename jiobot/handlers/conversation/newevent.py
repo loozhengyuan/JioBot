@@ -20,6 +20,11 @@ class RSVP:
     NO = "NO"
 
 
+class EVENT:
+    START = "START"
+    END = "END"
+
+
 @send_typing_action
 def entry(update, context):
     """Handles the entry point for the chatbot"""
