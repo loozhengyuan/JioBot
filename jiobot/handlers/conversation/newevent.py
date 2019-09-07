@@ -26,14 +26,15 @@ class EVENT:
 
 
 RSVP_BUTTONS = [
-        [
-            InlineKeyboardButton(RSVP.YES, callback_data=RSVP.YES),
-            InlineKeyboardButton(RSVP.NO, callback_data=RSVP.NO),
-        ],
-        [
-            InlineKeyboardButton(EVENT.END, callback_data=EVENT.END),
-        ],
-    ]
+    [
+        InlineKeyboardButton(RSVP.YES, callback_data=RSVP.YES),
+        InlineKeyboardButton(RSVP.NO, callback_data=RSVP.NO),
+    ],
+    [
+        InlineKeyboardButton(EVENT.END, callback_data=EVENT.END),
+    ],
+]
+
 
 @send_typing_action
 def entry(update, context):
@@ -126,7 +127,7 @@ def handle_rsvp(update, context):
         # Deletes chat_data if it currently exists
         if context.chat_data.get("newevent"):
             del context.chat_data['newevent']
-        
+
         # Answer callback
         context.bot.answer_callback_query(update.callback_query.id)
         return ConversationHandler.END
