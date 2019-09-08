@@ -22,6 +22,13 @@ if __name__ == "__main__":
     # Set name of persistence data file
     persistence_file = "data/persistence.pickle"
 
+    # Download file if not exists
+    if not os.path.isfile(persistence_file):
+        logging.info(f"File {persistence_file} was not found, downloading from AWS S3.")
+        s3 = boto3.resource('s3')
+        s3.meta.client.download_file(INSTANCE_ID, persistence_file, persistence_file)
+        logging.debug(f"{persistence_file} was successfully downloaded!")
+
     # Initialise persistence object
     if not os.path.isfile(persistence_file):
         raise FileNotFoundError(f"{persistence_file} cannot be found!")
