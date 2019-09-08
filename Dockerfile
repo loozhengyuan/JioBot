@@ -16,4 +16,4 @@ COPY jiobot /app/jiobot
 COPY main.py /app/main.py
 
 # Run server
-CMD ["python", "main.py"]
+ENTRYPOINT ["python", "main.py"]
