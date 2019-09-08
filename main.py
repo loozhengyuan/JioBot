@@ -7,6 +7,7 @@ from jiobot.handlers import commands, fallback
 from jiobot.handlers.conversation import newevent
 
 TELEGRAM_BOT_API_TOKEN = os.environ["TELEGRAM_BOT_API_TOKEN"]
+INSTANCE_ID = os.environ["INSTANCE_ID"]
 
 
 if __name__ == "__main__":
@@ -15,6 +16,7 @@ if __name__ == "__main__":
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.DEBUG,
     )
+    logging.info(f"Instance ID: {INSTANCE_ID}")
 
     # Initialise persistence object
     pp = PicklePersistence(filename='data/persistence.pickle')
