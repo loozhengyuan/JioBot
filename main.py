@@ -1,6 +1,7 @@
 import logging
 import os
 
+import boto3
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler, PicklePersistence
 
 from jiobot.handlers import commands, fallback
@@ -71,3 +72,9 @@ if __name__ == "__main__":
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
     up.idle()
+
+    # Backup latest file to AWS
+    logging.info(f"Uploading {persistence_file} to AWS S3.")
+    s3 = boto3.resource('s3')
+    s3.meta.client.upload_file(persistence_file, INSTANCE_ID, persistence_file)
+    logging.debug(f"{persistence_file} was successfully uploaded!")
