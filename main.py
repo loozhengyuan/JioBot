@@ -41,8 +41,6 @@ if __name__ == "__main__":
         logging.debug(f"{persistence_file} was successfully downloaded!")
 
     # Initialise persistence object
-    if not os.path.isfile(persistence_file):
-        raise FileNotFoundError(f"{persistence_file} cannot be found!")
     pp = PicklePersistence(filename=persistence_file)
 
     # Initialise updater and dispatcher
