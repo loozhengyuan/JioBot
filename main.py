@@ -22,6 +22,8 @@ if __name__ == "__main__":
     persistence_file = "data/persistence.pickle"
 
     # Initialise persistence object
+    if not os.path.isfile(persistence_file):
+        raise FileNotFoundError(f"{persistence_file} cannot be found!")
     pp = PicklePersistence(filename=persistence_file)
 
     # Initialise updater and dispatcher
