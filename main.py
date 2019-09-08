@@ -1,5 +1,6 @@
 import logging
 import os
+import argparse
 
 import boto3
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler, PicklePersistence
@@ -18,6 +19,16 @@ if __name__ == "__main__":
         level=logging.DEBUG,
     )
     logging.info(f"Instance ID: {INSTANCE_ID}")
+
+    # Define parser
+    parser = argparse.ArgumentParser(description='JioBot Telegram Bot')
+
+    # Add optional argument
+    parser.add_argument("--first-run", action="store_true", help="Initialise files for first run")
+
+    # Parse args
+    args = parser.parse_args()
+    logging.debug(f"Parsed arguments: {args}")
 
     # Set name of persistence data file
     persistence_file = "data/persistence.pickle"
