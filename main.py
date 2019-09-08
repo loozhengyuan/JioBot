@@ -18,8 +18,11 @@ if __name__ == "__main__":
     )
     logging.info(f"Instance ID: {INSTANCE_ID}")
 
+    # Set name of persistence data file
+    persistence_file = "data/persistence.pickle"
+
     # Initialise persistence object
-    pp = PicklePersistence(filename='data/persistence.pickle')
+    pp = PicklePersistence(filename=persistence_file)
 
     # Initialise updater and dispatcher
     up = Updater(token=TELEGRAM_BOT_API_TOKEN, persistence=pp, use_context=True)
