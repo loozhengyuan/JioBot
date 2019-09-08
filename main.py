@@ -10,18 +10,18 @@ TELEGRAM_BOT_API_TOKEN = os.environ["TELEGRAM_BOT_API_TOKEN"]
 
 
 if __name__ == "__main__":
+    # Initialise logging module
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=logging.DEBUG,
+    )
+
     # Initialise persistence object
     pp = PicklePersistence(filename='data/persistence.pickle')
 
     # Initialise updater and dispatcher
     up = Updater(token=TELEGRAM_BOT_API_TOKEN, persistence=pp, use_context=True)
     dp = up.dispatcher
-
-    # Initialise logging module
-    logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.DEBUG,
-    )
 
     # Command Handlers
     dp.add_handler(CommandHandler('start', commands.start))
