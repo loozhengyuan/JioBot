@@ -30,6 +30,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logging.debug(f"Parsed arguments: {args}")
 
+    # Create AWS S3 resource object
+    s3 = boto3.resource('s3')
+
     # Set name of persistence data file
     persistence_file = "data/persistence.pickle"
 
@@ -43,7 +46,6 @@ if __name__ == "__main__":
 
         # Get file from AWS S3 if not first time
         else:
-            s3 = boto3.resource('s3')
             s3.meta.client.download_file(INSTANCE_ID, persistence_file, persistence_file)
             logging.debug(f"File {persistence_file} was successfully downloaded!")
 
@@ -98,6 +100,5 @@ if __name__ == "__main__":
 
     # Backup latest file to AWS
     logging.info(f"Uploading {persistence_file} to AWS S3.")
-    s3 = boto3.resource('s3')
     s3.meta.client.upload_file(persistence_file, INSTANCE_ID, persistence_file)
     logging.debug(f"File {persistence_file} was successfully uploaded!")
