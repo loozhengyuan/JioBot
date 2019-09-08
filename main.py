@@ -1,27 +1,60 @@
 import logging
 import os
+import argparse
 
+import boto3
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, ConversationHandler, PicklePersistence
 
 from jiobot.handlers import commands, fallback
 from jiobot.handlers.conversation import newevent
 
 TELEGRAM_BOT_API_TOKEN = os.environ["TELEGRAM_BOT_API_TOKEN"]
+INSTANCE_ID = os.environ["INSTANCE_ID"]
 
 
 if __name__ == "__main__":
-    # Initialise persistence object
-    pp = PicklePersistence(filename='data/persistence.pickle')
-
-    # Initialise updater and dispatcher
-    up = Updater(token=TELEGRAM_BOT_API_TOKEN, persistence=pp, use_context=True)
-    dp = up.dispatcher
-
     # Initialise logging module
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.DEBUG,
     )
+    logging.info(f"Instance ID: {INSTANCE_ID}")
+
+    # Define parser
+    parser = argparse.ArgumentParser(description='JioBot Telegram Bot')
+
+    # Add optional argument
+    parser.add_argument("--first-run", action="store_true", help="Initialise files for first run")
+
+    # Parse args
+    args = parser.parse_args()
+    logging.debug(f"Parsed arguments: {args}")
+
+    # Create AWS S3 resource object
+    s3 = boto3.resource('s3')
+
+    # Set name of persistence data file
+    persistence_file = "data/persistence.pickle"
+
+    # Check if persistence file exists
+    if not os.path.isfile(persistence_file):
+        logging.error(f"File {persistence_file} was not found!")
+
+        # Warn that new file will be created
+        if args.first_run:
+            logging.warning(f"File {persistence_file} will be newly created since --first-run={args.first_run}")
+
+        # Get file from AWS S3 if not first time
+        else:
+            s3.meta.client.download_file(INSTANCE_ID, persistence_file, persistence_file)
+            logging.debug(f"File {persistence_file} was successfully downloaded!")
+
+    # Initialise persistence object
+    pp = PicklePersistence(filename=persistence_file)
+
+    # Initialise updater and dispatcher
+    up = Updater(token=TELEGRAM_BOT_API_TOKEN, persistence=pp, use_context=True)
+    dp = up.dispatcher
 
     # Command Handlers
     dp.add_handler(CommandHandler('start', commands.start))
@@ -64,3 +97,8 @@ if __name__ == "__main__":
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
     up.idle()
+
+    # Backup latest file to AWS
+    logging.info(f"Uploading {persistence_file} to AWS S3.")
+    s3.meta.client.upload_file(persistence_file, INSTANCE_ID, persistence_file)
+    logging.debug(f"File {persistence_file} was successfully uploaded!")
