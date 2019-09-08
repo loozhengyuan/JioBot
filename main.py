@@ -100,4 +100,4 @@ if __name__ == "__main__":
     logging.info(f"Uploading {persistence_file} to AWS S3.")
     s3 = boto3.resource('s3')
     s3.meta.client.upload_file(persistence_file, INSTANCE_ID, persistence_file)
-    logging.debug(f"{persistence_file} was successfully uploaded!")
+    logging.debug(f"File {persistence_file} was successfully uploaded!")
