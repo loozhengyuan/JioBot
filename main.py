@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     # Add optional argument
     parser.add_argument("--first-run", action="store_true", help="Initialise files for first run")
-    parser.add_argument("--ignore-local-data", action="store_true", help="Ignores local data file even if it exists")
+    parser.add_argument("--purge-data", action="store_true", help="Deletes any data files during initialisation")
 
     # Parse args
     args = parser.parse_args()
@@ -38,8 +38,8 @@ if __name__ == "__main__":
     persistence_file = "data/persistence.pickle"
 
     # Removes local copy of persistence file if desired
-    if args.ignore_local_data:
-        logging.warning(f"Local persistence file will be delete (if it even exists) since --ignore-local-data={args.ignore_local_data}")
+    if args.purge_data:
+        logging.warning(f"Local persistence file will be deleted (if it even exists) since --purge-data={args.purge_data}")
 
         # Remove file
         logging.info(f"Checking for existence of {persistence_file}")
