@@ -5,6 +5,7 @@ on:
   - pull_request
 
 env:
+  IMAGE_DIR: docker
   IMAGE_ARCHIVE: image.tar
 
 jobs:
@@ -68,15 +69,15 @@ jobs:
     # `docker save` will save ALL image tags
     - name: Save Docker image to file
       run: |
-        docker save --output ${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
+        docker save --output ${IMAGE_DIR}/${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
         ls -alh
         ls -alh jiobot
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v1
       with:
-        name: ${IMAGE_ARCHIVE}
-        path: ${IMAGE_ARCHIVE}
+        name: docker
+        path: ${IMAGE_DIR}
 
   push-docker-hub:
     name: Push to Docker Hub
@@ -92,11 +93,12 @@ jobs:
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: ${IMAGE_ARCHIVE}
+        name: docker
+        path: ${IMAGE_DIR}
     
     - name: Load Docker image
       run: |
-        docker load --input ${IMAGE_ARCHIVE}
+        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
         docker images ${GITHUB_REPOSITORY}
 
     - name: Push image to Docker Hub
@@ -123,11 +125,12 @@ jobs:
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: ${IMAGE_ARCHIVE}
+        name: docker
+        path: ${IMAGE_DIR}
     
     - name: Load Docker image
       run: |
-        docker load --input ${IMAGE_ARCHIVE}
+        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
         docker images ${GITHUB_REPOSITORY}
     
     # AWS recommended command generator (i.e. aws ecr get-login --no-include-email)
@@ -157,11 +160,12 @@ jobs:
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: ${IMAGE_ARCHIVE}
+        name: docker
+        path: ${IMAGE_DIR}
     
     - name: Load Docker image
       run: |
-        docker load --input ${IMAGE_ARCHIVE}
+        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
         docker images ${GITHUB_REPOSITORY}
     
     - name: Tag docker image
