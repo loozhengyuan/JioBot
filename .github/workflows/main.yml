@@ -69,6 +69,7 @@ jobs:
     # `docker save` will save ALL image tags
     - name: Save Docker image to file
       run: |
+        mkdir ${IMAGE_DIR}
         docker save --output ${IMAGE_DIR}/${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
         ls -alh
         ls -alh jiobot
