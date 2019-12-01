@@ -4,10 +4,6 @@ on:
   - push
   - pull_request
 
-env:
-  IMAGE_DIR: docker
-  IMAGE_ARCHIVE: image.tar
-
 jobs:
   test:
     name: Test on Python ${{ matrix.python-version }}
@@ -68,13 +64,12 @@ jobs:
 
     - name: Save Docker image to file
       run: |
-        docker save --output ${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
+        docker save --output image.tar ${GITHUB_REPOSITORY}
 
-    # with.path cannot use variable like ${IMAGE_ARCHIVE}
     - name: Upload build artifact
       uses: actions/upload-artifact@v1
       with:
-        name: ${IMAGE_DIR}
+        name: docker
         path: image.tar
 
   push-docker-hub:
@@ -88,7 +83,6 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     steps:
-    # with.name cannot use variable like ${IMAGE_DIR}
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
@@ -96,7 +90,7 @@ jobs:
     
     - name: Load Docker image
       run: |
-        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
+        docker load --input docker/image.tar
         docker images ${GITHUB_REPOSITORY}
 
     - name: Push image to Docker Hub
@@ -118,7 +112,6 @@ jobs:
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
     steps:
-    # with.name cannot use variable like ${IMAGE_DIR}
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
@@ -126,7 +119,7 @@ jobs:
     
     - name: Load Docker image
       run: |
-        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
+        docker load --input docker/image.tar
         docker images ${GITHUB_REPOSITORY}
     
     - name: Tag Docker image
@@ -154,7 +147,6 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
-    # with.name cannot use variable like ${IMAGE_DIR}
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
@@ -162,7 +154,7 @@ jobs:
     
     - name: Load Docker image
       run: |
-        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
+        docker load --input docker/image.tar
         docker images ${GITHUB_REPOSITORY}
 
     - name: Tag Docker image
