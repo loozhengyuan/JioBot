@@ -68,8 +68,8 @@ jobs:
 
     - name: Save Docker image to file
       run: |
-        mkdir docker
-        docker save --output docker/${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
+        mkdir ${IMAGE_DIR}
+        docker save --output ${IMAGE_DIR}/${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v1
