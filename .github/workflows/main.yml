@@ -69,6 +69,8 @@ jobs:
     - name: Save Docker image to file
       run: |
         docker save --output ${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
+        ls -alh
+        ls -alh ..
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v1
