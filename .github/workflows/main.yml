@@ -1,25 +1,173 @@
 name: Main Workflow
 
-on: [push, pull_request]
+on:
+  - push
+  - pull_request
 
 jobs:
   test:
-    name: Test
+    name: Test on Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     strategy:
-      max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7]
+        python-version:
+          # - 3.5
+          - 3.6
+          - 3.7
+          - 3.8
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout branch
+      uses: actions/checkout@v1
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
+        architecture: x64
+
     - name: Install dependencies
       run: |
         make install
+
     - name: Lint with flake8
       run: |
         make lint
+
+    # - name: Test with pytest
+    #   run: |
+    #     make test
+
+  build:
+    name: Build Docker image
+    needs: test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v1
+
+    - name: Build Docker image
+      run: |
+        docker build --tag ${GITHUB_REPOSITORY}:${GITHUB_SHA} .
+    
+    - name: Tag Docker image
+      run: |
+        docker tag ${GITHUB_REPOSITORY}:${GITHUB_SHA} ${GITHUB_REPOSITORY}:latest
+    
+    - name: Check image tags
+      run: |
+        docker images ${GITHUB_REPOSITORY}
+
+    - name: Save Docker image to file
+      run: |
+        docker save --output image.tar ${GITHUB_REPOSITORY}
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: docker
+        path: image.tar
+
+  push-docker-hub:
+    name: Push to Docker Hub
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v1
+      with:
+        name: docker
+    
+    - name: Load Docker image
+      run: |
+        docker load --input docker/image.tar
+        docker images ${GITHUB_REPOSITORY}
+
+    - name: Push image to Docker Hub
+      run: |
+        echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+        docker push ${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker push ${GITHUB_REPOSITORY}:latest
+        docker logout
+
+  push-gcp-gcr:
+    name: Push to GCP GCR
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      GCP_GCR_HOSTNAME: asia.gcr.io
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v1
+      with:
+        name: docker
+    
+    - name: Load Docker image
+      run: |
+        docker load --input docker/image.tar
+        docker images ${GITHUB_REPOSITORY}
+    
+    - name: Tag Docker image
+      run: |
+        docker tag ${GITHUB_REPOSITORY}:latest ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker tag ${GITHUB_REPOSITORY}:latest ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:latest
+    
+    - name: Push image to GCP GCR
+      run: |
+        echo ${GCP_SERVICE_ACCOUNT} | base64 --decode | docker login --username "_json_key" --password-stdin https://${GCP_GCR_HOSTNAME}
+        docker push ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker push ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:latest
+        docker logout
+
+  push-aws-ecr:
+    name: Push to AWS ECR
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      AWS_REGION: ap-southeast-1
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v1
+      with:
+        name: docker
+    
+    - name: Load Docker image
+      run: |
+        docker load --input docker/image.tar
+        docker images ${GITHUB_REPOSITORY}
+
+    - name: Tag Docker image
+      run: |
+        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:latest
+
+    # AWS recommended command generator (i.e. aws ecr get-login --no-include-email)
+    # exposes password on command line, which is an extremely bad practice.
+    # https://github.com/aws/aws-cli/issues/2875
+    - name: Push image to AWS ECR
+      run: |
+        aws ecr get-authorization-token --region ${AWS_REGION} --output text --query 'authorizationData[].authorizationToken' | base64 --decode | cut --delimiter ':' --fields 2 | docker login --username "AWS" --password-stdin https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:latest
+        docker logout
