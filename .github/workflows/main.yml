@@ -74,11 +74,11 @@ jobs:
         ls -alh docker
         ls -alh jiobot
 
-    # - name: Upload build artifact
-    #   uses: actions/upload-artifact@v1
-    #   with:
-    #     name: ${IMAGE_DIR}
-    #     path: ${IMAGE_DIR}
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: ${IMAGE_DIR}
+        path: ${IMAGE_DIR}
 
     # - name: Download build artifact
     #   uses: actions/download-artifact@v1
