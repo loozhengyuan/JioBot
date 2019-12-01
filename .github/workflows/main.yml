@@ -116,7 +116,8 @@ jobs:
     # https://github.com/aws/aws-cli/issues/2875
     - name: Push image to AWS ECR
       run: |
-        aws ecr get-authorization-token --region ${AWS_REGION} --output text --query 'authorizationData[].authorizationToken' | base64 --decode | cut --delimiter ':' --fields 2 | docker login --username "AWS" --password-stdin https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+        $(aws ecr get-login --no-include-email --region ${AWS_REGION})
+        # aws ecr get-authorization-token --region ${AWS_REGION} --output text --query 'authorizationData[].authorizationToken' | base64 --decode | cut --delimiter ':' --fields 2 | docker login --username "AWS" --password-stdin https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
         docker push ${GITHUB_REPOSITORY}:${GITHUB_SHA}
         docker push ${GITHUB_REPOSITORY}:latest
         docker logout
