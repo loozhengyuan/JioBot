@@ -89,7 +89,8 @@ jobs:
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: ${IMAGE_DIR}
+        name: docker
+        path: docker
     
     - name: Load Docker image
       run: |
