@@ -4,6 +4,10 @@ on:
   - push
   - pull_request
 
+env:
+  IMAGE_DIR: docker
+  IMAGE_ARCHIVE: image.tar
+
 jobs:
   test:
     name: Test on Python ${{ matrix.python-version }}
@@ -64,13 +68,13 @@ jobs:
 
     - name: Save Docker image to file
       run: |
-        docker save --output image.tar ${GITHUB_REPOSITORY}
+        docker save --output ${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v1
       with:
-        name: docker
-        path: image.tar
+        name: ${IMAGE_DIR}
+        path: ${IMAGE_ARCHIVE}
 
   push-docker-hub:
     name: Push to Docker Hub
@@ -86,11 +90,11 @@ jobs:
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: docker
+        name: ${IMAGE_DIR}
     
     - name: Load Docker image
       run: |
-        docker load --input docker/image.tar
+        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
         docker images ${GITHUB_REPOSITORY}
 
     - name: Push image to Docker Hub
@@ -115,11 +119,11 @@ jobs:
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: docker
+        name: ${IMAGE_DIR}
     
     - name: Load Docker image
       run: |
-        docker load --input docker/image.tar
+        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
         docker images ${GITHUB_REPOSITORY}
     
     - name: Tag Docker image
@@ -150,11 +154,11 @@ jobs:
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: docker
-
+        name: ${IMAGE_DIR}
+    
     - name: Load Docker image
       run: |
-        docker load --input docker/image.tar
+        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
         docker images ${GITHUB_REPOSITORY}
 
     - name: Tag Docker image
