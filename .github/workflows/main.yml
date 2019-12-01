@@ -118,8 +118,10 @@ jobs:
       run: |
         $(aws ecr get-login --no-include-email --region ${AWS_REGION})
         # aws ecr get-authorization-token --region ${AWS_REGION} --output text --query 'authorizationData[].authorizationToken' | base64 --decode | cut --delimiter ':' --fields 2 | docker login --username "AWS" --password-stdin https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-        docker push ${GITHUB_REPOSITORY}:${GITHUB_SHA}
-        docker push ${GITHUB_REPOSITORY}:latest
+        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:latest
+        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:latest
+        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
         docker logout
       env:
         AWS_REGION: ${{ secrets.AWS_REGION }}
