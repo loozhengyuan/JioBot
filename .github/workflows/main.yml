@@ -94,7 +94,7 @@ jobs:
     
     - name: Load Docker image
       run: |
-        docker load --input ${GITHUB_REPOSITORY}
+        docker load --input ${IMAGE_ARCHIVE}
         docker images ${GITHUB_REPOSITORY}
 
     - name: Push image to Docker Hub
@@ -125,7 +125,7 @@ jobs:
     
     - name: Load Docker image
       run: |
-        docker load --input ${GITHUB_REPOSITORY}
+        docker load --input ${IMAGE_ARCHIVE}
         docker images ${GITHUB_REPOSITORY}
     
     # AWS recommended command generator (i.e. aws ecr get-login --no-include-email)
@@ -159,7 +159,7 @@ jobs:
     
     - name: Load Docker image
       run: |
-        docker load --input ${GITHUB_REPOSITORY}
+        docker load --input ${IMAGE_ARCHIVE}
         docker images ${GITHUB_REPOSITORY}
     
     - name: Tag docker image
