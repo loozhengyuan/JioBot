@@ -66,10 +66,10 @@ jobs:
       run: |
         docker images ${GITHUB_REPOSITORY}
 
-    # - name: Save Docker image to file
-    #   run: |
-    #     mkdir ${IMAGE_DIR}
-    #     docker save --output ${IMAGE_DIR}/${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
+    - name: Save Docker image to file
+      run: |
+        mkdir ${IMAGE_DIR}
+        docker save --output ${IMAGE_DIR}/${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
 
     # - name: Upload build artifact
     #   uses: actions/upload-artifact@v1
