@@ -87,7 +87,7 @@ jobs:
     
     - name: Load Docker image
       run: |
-        docker load --input image.tar
+        docker load --input docker/image.tar
         docker images ${GITHUB_REPOSITORY}
 
     - name: Push image to Docker Hub
