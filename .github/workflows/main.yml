@@ -70,7 +70,7 @@ jobs:
       run: |
         docker save --output ${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
         ls -alh
-        ls -alh ..
+        ls -alh jiobot
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v1
