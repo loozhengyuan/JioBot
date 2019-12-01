@@ -68,8 +68,8 @@ jobs:
 
     - name: Save Docker image to file
       run: |
-        mkdir ${IMAGE_DIR}
-        docker save --output ${IMAGE_DIR}/${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
+        mkdir docker
+        docker save --output docker/image.tar ${GITHUB_REPOSITORY}
         ls -alh
         ls -alh docker
         ls -alh jiobot
@@ -77,8 +77,8 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v1
       with:
-        name: ${IMAGE_DIR}
-        path: ${IMAGE_DIR}
+        name: docker
+        path: docker
 
     # - name: Download build artifact
     #   uses: actions/download-artifact@v1
