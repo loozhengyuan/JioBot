@@ -4,10 +4,6 @@ on:
   - push
   - pull_request
 
-env:
-  IMAGE_DIR: docker
-  IMAGE_ARCHIVE: image.tar
-
 jobs:
   test:
     name: Test on Python ${{ matrix.python-version }}
@@ -68,15 +64,13 @@ jobs:
 
     - name: Save Docker image to file
       run: |
-        mkdir ${IMAGE_DIR}
-        docker save --output ${IMAGE_DIR}/${IMAGE_ARCHIVE} ${GITHUB_REPOSITORY}
+        docker save --output image.tar ${GITHUB_REPOSITORY}
 
-    # with.path cannot work with ${IMAGE_DIR} variable
     - name: Upload build artifact
       uses: actions/upload-artifact@v1
       with:
-        name: ${IMAGE_DIR}
-        path: docker
+        name: docker
+        path: image.tar
 
   push-docker-hub:
     name: Push to Docker Hub
@@ -90,11 +84,11 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: docker
-        path: docker
+        path: image.tar
     
     - name: Load Docker image
       run: |
-        docker load --input ${IMAGE_DIR}/${IMAGE_ARCHIVE}
+        docker load --input image.tar
         docker images ${GITHUB_REPOSITORY}
 
     - name: Push image to Docker Hub
