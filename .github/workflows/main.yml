@@ -84,7 +84,6 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: docker
-        path: image.tar
     
     - name: Load Docker image
       run: |
