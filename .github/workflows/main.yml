@@ -58,7 +58,7 @@ jobs:
       run: |
         docker build --tag ${GITHUB_REPOSITORY}:${GITHUB_SHA} .
     
-    - name: Add :latest convenience tag
+    - name: Tag Docker image
       run: |
         docker tag ${GITHUB_REPOSITORY}:${GITHUB_SHA} ${GITHUB_REPOSITORY}:latest
     
