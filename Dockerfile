@@ -7,9 +7,9 @@ WORKDIR /app
 # Copy requirements file
 COPY requirements.txt /app/requirements.txt
 
-# Install gcc (required to build for python:3-slim images)
+# Install missing dependencies for `cryptography` package
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc \
+    && apt-get install -y --no-install-recommends build-essential libssl-dev libffi-dev python-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
