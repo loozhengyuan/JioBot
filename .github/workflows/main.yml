@@ -88,10 +88,11 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     steps:
+    # with.name cannot use variable like ${IMAGE_DIR}
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: ${IMAGE_DIR}
+        name: docker
     
     - name: Load Docker image
       run: |
@@ -117,10 +118,11 @@ jobs:
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
     steps:
+    # with.name cannot use variable like ${IMAGE_DIR}
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: ${IMAGE_DIR}
+        name: docker
     
     - name: Load Docker image
       run: |
@@ -152,10 +154,11 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
+    # with.name cannot use variable like ${IMAGE_DIR}
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
-        name: ${IMAGE_DIR}
+        name: docker
     
     - name: Load Docker image
       run: |
