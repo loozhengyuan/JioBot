@@ -78,6 +78,9 @@ jobs:
     # if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
     steps:
     - name: Download build artifact
@@ -96,9 +99,6 @@ jobs:
         docker push ${GITHUB_REPOSITORY}:${GITHUB_SHA}
         docker push ${GITHUB_REPOSITORY}:latest
         docker logout
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   push-gcp-gcr:
     name: Push to GCP GCR
@@ -106,6 +106,10 @@ jobs:
     # if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    env:
+      GCP_GCR_HOSTNAME: asia.gcr.io
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
     steps:
     - name: Download build artifact
@@ -118,18 +122,17 @@ jobs:
         docker load --input docker/image.tar
         docker images ${GITHUB_REPOSITORY}
     
+    - name: Tag Docker image
+      run: |
+        docker tag ${GITHUB_REPOSITORY}:latest ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker tag ${GITHUB_REPOSITORY}:latest ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:latest
+    
     - name: Push image to GCP GCR
       run: |
         echo ${GCP_SERVICE_ACCOUNT} | base64 --decode | docker login --username "_json_key" --password-stdin https://${GCP_GCR_HOSTNAME}
-        docker tag ${GITHUB_REPOSITORY}:latest ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:${GITHUB_SHA}
-        docker tag ${GITHUB_REPOSITORY}:latest ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:latest
         docker push ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:${GITHUB_SHA}
         docker push ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:latest
         docker logout
-      env:
-        GCP_GCR_HOSTNAME: asia.gcr.io
-        GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-        GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
   push-aws-ecr:
     name: Push to AWS ECR
@@ -137,17 +140,27 @@ jobs:
     # if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    env:
+      AWS_REGION: ap-southeast-1
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
     - name: Download build artifact
       uses: actions/download-artifact@v1
       with:
         name: docker
-    
+
     - name: Load Docker image
       run: |
         docker load --input docker/image.tar
         docker images ${GITHUB_REPOSITORY}
+
+    - name: Tag Docker image
+      run: |
+        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:latest
 
     # AWS recommended command generator (i.e. aws ecr get-login --no-include-email)
     # exposes password on command line, which is an extremely bad practice.
@@ -155,13 +168,6 @@ jobs:
     - name: Push image to AWS ECR
       run: |
         aws ecr get-authorization-token --region ${AWS_REGION} --output text --query 'authorizationData[].authorizationToken' | base64 --decode | cut --delimiter ':' --fields 2 | docker login --username "AWS" --password-stdin https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
-        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:latest
         docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
         docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:latest
         docker logout
-      env:
-        AWS_REGION: ap-southeast-1
-        AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
