@@ -52,11 +52,11 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build --tag ${GITHUB_REPOSITORY}:${GITHUB_SHA} .
+        docker build --tag ${GITHUB_REPOSITORY} .
     
     - name: Tag Docker image
       run: |
-        docker tag ${GITHUB_REPOSITORY}:${GITHUB_SHA} ${GITHUB_REPOSITORY}:latest
+        docker tag ${GITHUB_REPOSITORY} ${GITHUB_REPOSITORY}:${GITHUB_SHA}
     
     - name: Check image tags
       run: |
@@ -97,7 +97,7 @@ jobs:
       run: |
         echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
         docker push ${GITHUB_REPOSITORY}:${GITHUB_SHA}
-        docker push ${GITHUB_REPOSITORY}:latest
+        docker push ${GITHUB_REPOSITORY}
         docker logout
 
   push-gcp-gcr:
@@ -124,14 +124,14 @@ jobs:
     
     - name: Tag Docker image
       run: |
-        docker tag ${GITHUB_REPOSITORY}:latest ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:${GITHUB_SHA}
-        docker tag ${GITHUB_REPOSITORY}:latest ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:latest
+        docker tag ${GITHUB_REPOSITORY} ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker tag ${GITHUB_REPOSITORY} ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}
     
     - name: Push image to GCP GCR
       run: |
         echo ${GCP_SERVICE_ACCOUNT} | base64 --decode | docker login --username "_json_key" --password-stdin https://${GCP_GCR_HOSTNAME}
         docker push ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:${GITHUB_SHA}
-        docker push ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}:latest
+        docker push ${GCP_GCR_HOSTNAME}/${GCP_PROJECT_ID}/${GITHUB_REPOSITORY}
         docker logout https://${GCP_GCR_HOSTNAME}
 
   push-aws-ecr:
@@ -159,8 +159,8 @@ jobs:
 
     - name: Tag Docker image
       run: |
-        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
-        docker tag ${GITHUB_REPOSITORY}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:latest
+        docker tag ${GITHUB_REPOSITORY} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
+        docker tag ${GITHUB_REPOSITORY} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}
 
     # AWS recommended command generator (i.e. aws ecr get-login --no-include-email)
     # exposes password on command line, which is an extremely bad practice.
@@ -169,5 +169,5 @@ jobs:
       run: |
         aws ecr get-authorization-token --region ${AWS_REGION} --output text --query 'authorizationData[].authorizationToken' | base64 --decode | cut --delimiter ':' --fields 2 | docker login --username "AWS" --password-stdin https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
         docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:${GITHUB_SHA}
-        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}:latest
+        docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${GITHUB_REPOSITORY}
         docker logout https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
