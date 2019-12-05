@@ -20,5 +20,12 @@ RUN pip3 install -r requirements.txt
 COPY jiobot /app/jiobot
 COPY main.py /app/main.py
 
+# Create unprivileged system user
+# The -l flag is used as a workaround due to an unresolved bug:
+# https://github.com/golang/go/issues/13548
+RUN groupadd -r docker && useradd -l -r -s /bin/false -g docker docker
+RUN chown -R docker:docker /app
+USER docker
+
 # Run server
 ENTRYPOINT ["python", "main.py"]
